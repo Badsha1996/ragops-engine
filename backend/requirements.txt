@@ -1,0 +1,17 @@
+fastapi 
+uvicorn
+pydantic
+langgraph
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+langchain-openai
+langgraph
+upstash-redis
+python-dotenv
+httpx
+numpy
+openai
+google
+dotenv
