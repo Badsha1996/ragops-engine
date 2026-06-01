@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Terminal, Cpu, Database, Settings, BarChart3, 
+  Activity, Play, Sparkles, Key, RotateCcw, 
+  Trash2, PlusCircle, CheckCircle, FileText, 
+  ChevronsRight, AlertTriangle, ArrowRight, BookOpen, Clock, HeartHandshake
+} from "lucide-react";
+
 import KeyModal from "../components/KeyModal";
 import Analytics from "../components/Analytics";
 import Visualizer from "../components/Visualizer";
@@ -47,7 +55,7 @@ interface TraceSpan {
 
 export default function Dashboard() {
   // Navigation active tab
-  const [activeTab, setActiveTab] = useState<"playground" | "trace" | "corpus" | "settings">("playground");
+  const [activeTab, setActiveTab] = useState<"playground" | "trace" | "analytics" | "corpus" | "settings">("playground");
   
   // App States
   const [query, setQuery] = useState("");
@@ -379,31 +387,59 @@ export default function Dashboard() {
     }
   };
 
+  const pageTransition = {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -8 },
+    transition: { type: "tween", ease: "easeInOut", duration: 0.25 }
+  } as const;
+
   return (
-    <div className="app-container" style={{ maxWidth: "1200px", padding: "16px 24px", gap: "16px" }}>
+    <div className="app-container">
       
       {/* 1. Header (Balanced Padding & Clean Alignment) */}
-      <header className="app-header" style={{ paddingBottom: "12px", marginBottom: "4px" }}>
+      <header className="app-header">
         <div className="logo-text">
-          <span>🚀 RAGOps Engine</span>
-          <span style={{ fontSize: "0.72rem", background: "var(--primary-light)", color: "var(--primary)", padding: "2px 8px", borderRadius: "6px", fontWeight: "600" }}>
-            Stateful Multi-Agent
+          <div style={{ background: "var(--primary)", color: "#ffffff", padding: "8px", borderRadius: "10px", display: "flex", alignItems: "center" }}>
+            <Activity size={20} />
+          </div>
+          <span style={{ fontWeight: "700" }}>RAGOps Engine</span>
+          <span className="badge badge-blue" style={{ fontSize: "0.68rem" }}>
+            Multi-Agent AI
           </span>
         </div>
 
         {/* Tab Navbar (Perfect Line Height) */}
         <nav className="tab-navbar">
-          <button onClick={() => setActiveTab("playground")} className={`nav-tab-button ${activeTab === "playground" ? "active" : ""}`}>
-            Console
+          <button 
+            onClick={() => setActiveTab("playground")} 
+            className={`nav-tab-button ${activeTab === "playground" ? "active" : ""}`}
+          >
+            <Terminal size={14} /> Console
           </button>
-          <button onClick={() => setActiveTab("trace")} className={`nav-tab-button ${activeTab === "trace" ? "active" : ""}`}>
-            Traces
+          <button 
+            onClick={() => setActiveTab("trace")} 
+            className={`nav-tab-button ${activeTab === "trace" ? "active" : ""}`}
+          >
+            <Cpu size={14} /> Orchestration
           </button>
-          <button onClick={() => setActiveTab("corpus")} className={`nav-tab-button ${activeTab === "corpus" ? "active" : ""}`}>
-            Knowledge DB
+          <button 
+            onClick={() => setActiveTab("analytics")} 
+            className={`nav-tab-button ${activeTab === "analytics" ? "active" : ""}`}
+          >
+            <BarChart3 size={14} /> ROI Analytics
           </button>
-          <button onClick={() => setActiveTab("settings")} className={`nav-tab-button ${activeTab === "settings" ? "active" : ""}`}>
-            Settings
+          <button 
+            onClick={() => setActiveTab("corpus")} 
+            className={`nav-tab-button ${activeTab === "corpus" ? "active" : ""}`}
+          >
+            <Database size={14} /> Knowledge DB
+          </button>
+          <button 
+            onClick={() => setActiveTab("settings")} 
+            className={`nav-tab-button ${activeTab === "settings" ? "active" : ""}`}
+          >
+            <Settings size={14} /> Settings
           </button>
         </nav>
       </header>
@@ -413,362 +449,605 @@ export default function Dashboard() {
         style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", 
-          gap: "10px",
+          gap: "12px",
           width: "100%",
-          marginBottom: "8px"
         }}
       >
-        <div className="mini-card" style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid var(--card-border)" }}>
-          <span className="mini-card-label" style={{ fontSize: "0.68rem" }}>Engine runs</span>
-          <span className="mini-card-value" style={{ fontSize: "1.05rem", marginTop: 0 }}>{totalQueries}</span>
+        <div className="mini-card" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div className="mini-card-label">Engine queries</div>
+            <div className="mini-card-value">{totalQueries}</div>
+          </div>
+          <div style={{ color: "var(--primary)", opacity: 0.15 }}>
+            <Terminal size={32} />
+          </div>
         </div>
-        <div className="mini-card" style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid var(--card-border)" }}>
-          <span className="mini-card-label" style={{ fontSize: "0.68rem" }}>Latency</span>
-          <span className="mini-card-value" style={{ fontSize: "1.05rem", marginTop: 0 }}>{avgLatency !== null ? `${avgLatency}ms` : "N/A"}</span>
+        <div className="mini-card" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div className="mini-card-label">Avg Latency</div>
+            <div className="mini-card-value">{avgLatency !== null ? `${avgLatency}ms` : "N/A"}</div>
+          </div>
+          <div style={{ color: "var(--primary)", opacity: 0.15 }}>
+            <Clock size={32} />
+          </div>
         </div>
-        <div className="mini-card" style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid var(--card-border)" }}>
-          <span className="mini-card-label" style={{ fontSize: "0.68rem" }}>Cache Hit</span>
-          <span className="mini-card-value" style={{ fontSize: "1.05rem", marginTop: 0, color: "var(--success)" }}>{cacheHitsCount}</span>
+        <div className="mini-card" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div className="mini-card-label">Semantic cache hits</div>
+            <div className="mini-card-value" style={{ color: "var(--success)" }}>{cacheHitsCount}</div>
+          </div>
+          <div style={{ color: "var(--success)", opacity: 0.15 }}>
+            <Database size={32} />
+          </div>
         </div>
-        <div className="mini-card" style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid var(--card-border)" }}>
-          <span className="mini-card-label" style={{ fontSize: "0.68rem" }}>Saved USD</span>
-          <span className="mini-card-value" style={{ fontSize: "1.05rem", marginTop: 0, color: "var(--success)" }}>${accumulatedSavings.toFixed(5)}</span>
+        <div className="mini-card" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div className="mini-card-label">Accumulated savings</div>
+            <div className="mini-card-value" style={{ color: "var(--success)" }}>${accumulatedSavings.toFixed(4)}</div>
+          </div>
+          <div style={{ color: "var(--success)", opacity: 0.15 }}>
+            <Sparkles size={32} />
+          </div>
         </div>
       </div>
 
-      {/* 2. Main Workspace Layout (Perfect Dual Column Balance) */}
-      <div className="chat-workspace split" style={{ display: "grid", gap: "20px" }}>
-        
-        {/* LEFT COLUMN: Main focused Workspace */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* Main Workspace Layout with Page-level Transitions */}
+      <main style={{ minHeight: "60vh" }}>
+        <AnimatePresence mode="wait">
           
           {/* TAB 1: Console / Playground */}
           {activeTab === "playground" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              
-              {/* Floating Input console (centered Perplexity style) */}
-              <div className="sleek-card" style={{ padding: "16px" }}>
+            <motion.div 
+              key="playground"
+              {...pageTransition}
+              className={`chat-workspace ${response ? "split" : "full"}`}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 
-                {isLoading && (
-                  <div style={{ width: "100%", height: "2px", background: "#f1f5f9", borderRadius: "99px", overflow: "hidden", marginBottom: "12px" }}>
-                    <div style={{ height: "100%", background: "var(--primary)", width: "35%", borderRadius: "99px", animation: "dash 1.3s ease-in-out infinite" }}></div>
-                  </div>
-                )}
-
-                <div className="search-container">
-                  <input 
-                    type="text"
-                    placeholder="Ask corporate policy details (e.g. Vacation roll-overs, WFH stipend guidelines)..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="search-input"
-                    onKeyDown={(e) => e.key === "Enter" && handleQuerySubmit()}
-                    disabled={isLoading || !backendActive}
-                    style={{ padding: "12px 50px 12px 14px", borderRadius: "10px", fontSize: "0.9rem" }}
-                  />
-                  <button 
-                    onClick={() => handleQuerySubmit()} 
-                    className="search-submit-btn"
-                    disabled={isLoading || !query.trim() || !backendActive}
-                    style={{ width: "32px", height: "32px", right: "6px" }}
-                  >
-                    ➔
-                  </button>
-                </div>
-
-                {/* Micro Toggles direct pill switches */}
-                <div className="strategy-row" style={{ marginTop: "8px", gap: "6px" }}>
-                  <button 
-                    onClick={() => handleToggleChange("hybrid", !hybridSearchEnabled)}
-                    className={`strategy-chip ${hybridSearchEnabled ? "active" : ""}`}
-                    style={{ padding: "4px 10px", fontSize: "0.72rem" }}
-                  >
-                    ⚡ Hybrid RRF Search
-                  </button>
-                  <button 
-                    onClick={() => handleToggleChange("hyde", !hydeEnabled)}
-                    className={`strategy-chip ${hydeEnabled ? "active" : ""}`}
-                    style={{ padding: "4px 10px", fontSize: "0.72rem" }}
-                  >
-                    🔎 HyDE Transformer
-                  </button>
-                  <button 
-                    onClick={() => handleToggleChange("multiquery", !multiQueryEnabled)}
-                    className={`strategy-chip ${multiQueryEnabled ? "active" : ""}`}
-                    style={{ padding: "4px 10px", fontSize: "0.72rem" }}
-                  >
-                    🧬 Multi-Query Split
-                  </button>
-                </div>
-              </div>
-
-              {/* Output Bubble Response Panel */}
-              {response && !isLoading && (
-                <div className="sleek-card" style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "18px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span className="badge badge-blue" style={{ fontSize: "0.62rem" }}>{response.model_used.split(" ")[0]}</span>
-                      {response.cache_hit && <span className="badge badge-green" style={{ fontSize: "0.62rem" }}>Cache Hit</span>}
-                      {response.retry_count > 0 && <span className="badge badge-amber" style={{ fontSize: "0.62rem" }}>Self-corrected</span>}
+                {/* Floating Input console (centered Perplexity style) */}
+                <div className="sleek-card" style={{ padding: "24px" }}>
+                  
+                  {isLoading && (
+                    <div style={{ width: "100%", height: "3px", background: "#f1f5f9", borderRadius: "99px", overflow: "hidden", marginBottom: "16px" }}>
+                      <div style={{ height: "100%", background: "var(--primary)", width: "35%", borderRadius: "99px", animation: "dash 1.3s ease-in-out infinite" }}></div>
                     </div>
-                    <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-                      Query executed in {response.latencies?.overall || 0}ms
-                    </span>
-                  </div>
+                  )}
 
-                  <p style={{ fontSize: "0.92rem", color: "var(--text-primary)", lineHeight: "1.55", whiteSpace: "pre-line" }}>
-                    {response.response}
-                  </p>
-
-                  {/* Collapsible references block */}
-                  <div style={{ borderTop: "1px solid var(--card-border)", paddingTop: "8px", marginTop: "2px" }}>
-                    <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginRight: "6px" }}>
-                      References:
-                    </span>
-                    <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "6px" }}>
-                      {response.context.map((ctx, idx) => {
-                        const titleMatch = ctx.match(/^([^:]+):/);
-                        const label = titleMatch ? titleMatch[1] : `Doc ${idx + 1}`;
-                        const isExpanded = expandedCtxIdx === idx;
-                        return (
-                          <button 
-                            key={idx} 
-                            onClick={() => setExpandedCtxIdx(isExpanded ? null : idx)} 
-                            className="ref-pill"
-                            style={{ borderColor: isExpanded ? "var(--primary)" : "#cbd5e1", padding: "2px 6px", fontSize: "0.7rem" }}
-                          >
-                            📄 {label} {isExpanded ? "▴" : "▾"}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    
-                    {expandedCtxIdx !== null && (
-                      <div style={{ background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "8px 10px", fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "8px", lineHeight: "1.4" }}>
-                        {response.context[expandedCtxIdx]}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Clean Preset Trigger Chips (Pills style) */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  One-Click Sample Policies Query triggers:
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px" }}>
-                  {sampleQueries.map((sample, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setQuery(sample.text);
-                        handleQuerySubmit(sample.text);
-                      }}
+                  <div className="search-container">
+                    <input 
+                      type="text"
+                      placeholder="Search policy guidelines (e.g. Parental leave duration, travel stipends)..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="search-input"
+                      onKeyDown={(e) => e.key === "Enter" && handleQuerySubmit()}
                       disabled={isLoading || !backendActive}
-                      style={{
-                        background: "#ffffff",
-                        border: "1px solid var(--card-border)",
-                        borderRadius: "8px",
-                        padding: "8px 12px",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        transition: "var(--transition-smooth)"
-                      }}
+                    />
+                    <button 
+                      onClick={() => handleQuerySubmit()} 
+                      className="search-submit-btn"
+                      disabled={isLoading || !query.trim() || !backendActive}
                     >
-                      <span style={{ fontSize: "0.82rem", color: "var(--text-primary)", fontWeight: "500" }}>"{sample.text}"</span>
-                      <span style={{ fontSize: "0.7rem", fontWeight: "600", color: idx === 2 ? "var(--warning)" : "var(--primary)", background: idx === 2 ? "var(--warning-light)" : "var(--primary-light)", padding: "2px 8px", borderRadius: "4px" }}>
-                        {idx === 0 ? "Fast" : idx === 1 ? "Hybrid" : "Grader retry"}
-                      </span>
+                      <Play size={15} fill="#ffffff" />
                     </button>
-                  ))}
+                  </div>
+
+                  {/* Strategy toggles with micro-explanations */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "12px" }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                      Expert RAG Strategies Activated:
+                    </span>
+                    <div className="strategy-row">
+                      <button 
+                        onClick={() => handleToggleChange("hybrid", !hybridSearchEnabled)}
+                        className={`strategy-chip ${hybridSearchEnabled ? "active" : ""}`}
+                        title="Runs keyword search (BM25) and dense vector search in parallel, merging results via Reciprocal Rank Fusion."
+                      >
+                        ⚡ Hybrid RRF Retrieval
+                      </button>
+                      <button 
+                        onClick={() => handleToggleChange("hyde", !hydeEnabled)}
+                        className={`strategy-chip ${hydeEnabled ? "active" : ""}`}
+                        title="Generates a hypothetical correct response first, using it as the embedding search query to drastically improve vector alignment."
+                      >
+                        🔎 HyDE Rewriting
+                      </button>
+                      <button 
+                        onClick={() => handleToggleChange("multiquery", !multiQueryEnabled)}
+                        className={`strategy-chip ${multiQueryEnabled ? "active" : ""}`}
+                        title="Decomposes a single query into 3 sub-queries, gathering document chunks for all of them to synthesize robust answers."
+                      >
+                        🧬 Multi-Query Split
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-            </div>
-          )}
-
-          {/* TAB 2: Observibility timeline (Chronological waterfall spans) */}
-          {activeTab === "trace" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div className="sleek-card waterfall-card" style={{ padding: "16px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", alignItems: "center" }}>
-                  <h3 style={{ fontSize: "0.9rem", fontWeight: "700" }}>Chronological Waterfall Timeline (LangSmith Tracing)</h3>
-                  {apiKeys.langchain_api_key && <span className="badge badge-green" style={{ fontSize: "0.58rem" }}>Live LangSmith active</span>}
-                </div>
-
-                {response ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {traceSpans.map((span, idx) => (
-                      <div key={idx} className="waterfall-row" style={{ padding: "8px 10px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span className={`badge ${getBadgeClass(span.type)}`} style={{ fontSize: "0.55rem", padding: "1px 4px", borderRadius: "4px" }}>
-                            {span.type}
+                {/* Output Bubble Response Panel */}
+                <AnimatePresence>
+                  {response && !isLoading && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                      className="sleek-card" 
+                      style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "24px" }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--card-border)", paddingBottom: "10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span className="badge badge-purple">
+                            {response.model_used.split(" ")[0]}
                           </span>
-                          <span style={{ fontWeight: "500", fontSize: "0.78rem" }}>{span.name}</span>
+                          {response.cache_hit && <span className="badge badge-green">Cache Hit</span>}
+                          {response.retry_count > 0 && <span className="badge badge-amber">Self-Corrected</span>}
                         </div>
-                        <div style={{ fontFamily: "monospace", color: "var(--text-secondary)", fontSize: "0.76rem" }}>
-                          {span.duration}ms
-                        </div>
-                        <div className="duration-slider-track" style={{ height: "3px" }}>
-                          <div 
-                            className="duration-slider-fill" 
-                            style={{ 
-                              marginLeft: `${span.offset}%`, 
-                              width: `${span.width}%`,
-                              background: span.type === "Evaluator" ? "var(--danger)" : span.type === "Retriever" ? "var(--success)" : "var(--primary)"
-                            }}
-                          />
-                        </div>
+                        <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", fontWeight: "500" }}>
+                          Processed in {response.latencies?.overall || 0}ms
+                        </span>
                       </div>
+
+                      <p style={{ fontSize: "0.92rem", color: "var(--text-primary)", lineHeight: "1.6", whiteSpace: "pre-line" }}>
+                        {response.response}
+                      </p>
+
+                      {/* Collapsible references block */}
+                      <div style={{ borderTop: "1px solid var(--card-border)", paddingTop: "12px", marginTop: "4px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "0.74rem", color: "var(--text-secondary)", fontWeight: "600" }}>
+                            Source Context Chunks:
+                          </span>
+                          <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "6px" }}>
+                            {response.context.map((ctx, idx) => {
+                              const titleMatch = ctx.match(/^([^:]+):/);
+                              const label = titleMatch ? titleMatch[1] : `Section ${idx + 1}`;
+                              const isExpanded = expandedCtxIdx === idx;
+                              return (
+                                <button 
+                                  key={idx} 
+                                  onClick={() => setExpandedCtxIdx(isExpanded ? null : idx)} 
+                                  className="ref-pill"
+                                  style={{ 
+                                    borderColor: isExpanded ? "var(--primary)" : "var(--card-border)",
+                                    background: isExpanded ? "var(--primary-light)" : "rgba(241, 245, 249, 0.6)",
+                                    color: isExpanded ? "var(--primary)" : "var(--text-secondary)"
+                                  }}
+                                >
+                                  📄 {label} {isExpanded ? "▲" : "▼"}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        <AnimatePresence>
+                          {expandedCtxIdx !== null && (
+                            <motion.div 
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              style={{ overflow: "hidden" }}
+                            >
+                              <div style={{ 
+                                background: "#f8fafc", 
+                                border: "1px solid var(--card-border)", 
+                                borderRadius: "10px", 
+                                padding: "14px", 
+                                fontSize: "0.8rem", 
+                                color: "var(--text-secondary)", 
+                                marginTop: "12px", 
+                                lineHeight: "1.5" 
+                              }}>
+                                {response.context[expandedCtxIdx]}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Clean Preset Trigger Chips (Pills style) */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Select a Preset Policy Query:
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {sampleQueries.map((sample, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setQuery(sample.text);
+                          handleQuerySubmit(sample.text);
+                        }}
+                        disabled={isLoading || !backendActive}
+                        style={{
+                          background: "rgba(255, 255, 255, 0.7)",
+                          border: "1.5px solid var(--card-border)",
+                          borderRadius: "10px",
+                          padding: "10px 14px",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          transition: "var(--transition-smooth)"
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.borderColor = "var(--primary)")}
+                        onMouseOut={(e) => (e.currentTarget.style.borderColor = "var(--card-border)")}
+                      >
+                        <span style={{ fontSize: "0.82rem", color: "var(--text-primary)", fontWeight: "500" }}>"{sample.text}"</span>
+                        <span className="badge badge-blue" style={{ fontSize: "0.6rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                          <ChevronsRight size={10} /> {idx === 0 ? "Fast Route" : idx === 1 ? "RRF Hybrid" : "Correction Loop"}
+                        </span>
+                      </button>
                     ))}
                   </div>
-                ) : (
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", textAlign: "center", padding: "20px" }}>
-                    Submit a query to inspect the LangSmith traces timeline waterfall.
-                  </p>
-                )}
+                </div>
+
               </div>
-            </div>
+
+              {/* Sidebar Active Run Specs (Only visible when response is present) */}
+              {response && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                  style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                >
+                  <div className="sleek-card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <h3 style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "1px solid var(--card-border)", paddingBottom: "6px" }}>
+                      Active Run Diagnostics
+                    </h3>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Router Classify</span>
+                        <span style={{ fontWeight: "600", color: "var(--primary)", textTransform: "capitalize" }}>
+                          {response.route_decision === "cheap" ? "⚡ Simple (Fast)" : "🧠 Complex (Premium)"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Active Provider</span>
+                        <span style={{ fontWeight: "600" }}>{response.model_used}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Latency Duration</span>
+                        <span style={{ fontWeight: "600" }}>{response.latencies?.overall || 0} ms</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Calculated Cost</span>
+                        <span style={{ fontWeight: "600", color: response.cache_hit ? "var(--success)" : "var(--text-primary)" }}>
+                          ${response.cost.toFixed(5)}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Cache Synchronization</span>
+                        <span style={{ fontWeight: "600", color: "var(--success)" }}>
+                          {response.cache_hit ? "⚡ HIT" : "📝 Sync Complete"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>Quality Auditor</span>
+                        <span style={{ fontWeight: "600", color: response.retry_count > 0 ? "var(--warning)" : "var(--success)" }}>
+                          {response.retry_count > 0 ? `⚠️ Rejected ${response.retry_count}x` : "✅ Approved"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => setActiveTab("trace")} 
+                      className="button-primary"
+                      style={{ fontSize: "0.74rem", padding: "8px", width: "100%", marginTop: "6px" }}
+                    >
+                      Inspect Route Graph <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
           )}
 
-          {/* TAB 3: Knowledge Database manager */}
+          {/* TAB 2: Multi-Agent Trace Visualizer */}
+          {activeTab === "trace" && (
+            <motion.div 
+              key="trace"
+              {...pageTransition}
+              style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
+                <Visualizer 
+                  logs={response ? response.logs : []}
+                  routeDecision={response ? response.route_decision : ""}
+                  retryCount={response ? response.retry_count : 0}
+                  modelUsed={response ? response.model_used : ""}
+                  cacheHit={response ? response.cache_hit : false}
+                  activeNode=""
+                />
+
+                {/* Chronological waterfall spans */}
+                <div className="sleek-card waterfall-card" style={{ padding: "24px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", alignItems: "center" }}>
+                    <h3 style={{ fontSize: "0.88rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Clock size={16} style={{ color: "var(--primary)" }} /> Hierarchical Execution Waterfall Tracing
+                    </h3>
+                    {apiKeys.langchain_api_key && (
+                      <span className="badge badge-green" style={{ fontSize: "0.58rem" }}>
+                        Live LangSmith tracing active
+                      </span>
+                    )}
+                  </div>
+
+                  {response ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {traceSpans.map((span, idx) => (
+                        <div key={idx} className="waterfall-row">
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span className={`badge ${getBadgeClass(span.type)}`} style={{ fontSize: "0.56rem", padding: "2px 6px" }}>
+                              {span.type}
+                            </span>
+                            <span style={{ fontWeight: "600", fontSize: "0.78rem" }}>{span.name}</span>
+                          </div>
+                          <div style={{ fontFamily: "monospace", color: "var(--text-secondary)", fontSize: "0.78rem", textAlign: "right" }}>
+                            {span.duration} ms
+                          </div>
+                          <div className="duration-slider-track">
+                            <div 
+                              className="duration-slider-fill" 
+                              style={{ 
+                                marginLeft: `${span.offset}%`, 
+                                width: `${span.width}%`,
+                                background: span.type === "Evaluator" 
+                                  ? "var(--danger)" 
+                                  : span.type === "Retriever" 
+                                  ? "var(--success)" 
+                                  : "var(--primary)"
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", textAlign: "center", padding: "30px 10px" }}>
+                      <AlertTriangle size={24} style={{ color: "var(--warning)", marginBottom: "8px" }} />
+                      <p>Submit a policy query inside the Console to visualize chronological step timings.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* TAB 3: Cost and ROI Analytics */}
+          {activeTab === "analytics" && (
+            <motion.div 
+              key="analytics"
+              {...pageTransition}
+            >
+              <Analytics 
+                data={response ? {
+                  latency: response.latencies?.overall || 0,
+                  cost: response.cost,
+                  costSaved: accumulatedSavings,
+                  cacheHit: response.cache_hit,
+                  cacheSimilarity: response.cache_similarity,
+                  faithfulness: response.eval_results?.faithfulness,
+                  relevance: response.eval_results?.relevance,
+                  modelUsed: response.model_used,
+                  retryCount: response.retry_count,
+                } : null}
+              />
+            </motion.div>
+          )}
+
+          {/* TAB 4: Knowledge Database Manager */}
           {activeTab === "corpus" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div className="sleek-card" style={{ padding: "16px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <h3 style={{ fontSize: "0.9rem" }}>Index Corporate guidelines File</h3>
-                  <button onClick={handleResetCorpus} className="button-secondary" style={{ fontSize: "0.68rem", padding: "3px 6px" }}>
-                    Reset Defaults
+            <motion.div 
+              key="corpus"
+              {...pageTransition}
+              className="chat-workspace split"
+            >
+              {/* Document ingestion form */}
+              <div className="sleek-card" style={{ padding: "24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h3 style={{ fontSize: "0.9rem", fontWeight: "700" }}>Index Corporate Guidelines</h3>
+                  <button 
+                    onClick={handleResetCorpus} 
+                    className="button-secondary" 
+                    style={{ fontSize: "0.68rem", padding: "4px 8px" }}
+                  >
+                    <RotateCcw size={10} /> Reset Defaults
                   </button>
                 </div>
 
-                <form onSubmit={handleIngestSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ display: "flex", gap: "8px" }}>
+                <form onSubmit={handleIngestSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: "10px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                        Unique Document ID
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. travel_policy"
+                        value={newDocId}
+                        onChange={(e) => setNewDocId(e.target.value)}
+                        className="text-input"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                        Category
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. HR"
+                        value={newDocCategory}
+                        onChange={(e) => setNewDocCategory(e.target.value)}
+                        className="text-input"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                      Document Title
+                    </label>
                     <input 
                       type="text"
-                      placeholder="Doc ID (e.g. travel_expenses)"
-                      value={newDocId}
-                      onChange={(e) => setNewDocId(e.target.value)}
+                      placeholder="e.g. Travel and Transport Stipends"
+                      value={newDocTitle}
+                      onChange={(e) => setNewDocTitle(e.target.value)}
                       className="text-input"
-                      required
-                      style={{ fontSize: "0.8rem", padding: "8px 10px", flex: 1 }}
-                    />
-                    <input 
-                      type="text"
-                      placeholder="Category"
-                      value={newDocCategory}
-                      onChange={(e) => setNewDocCategory(e.target.value)}
-                      className="text-input"
-                      style={{ fontSize: "0.8rem", padding: "8px 10px", width: "90px" }}
                     />
                   </div>
-                  <input 
-                    type="text"
-                    placeholder="Doc Title (e.g. Travel Stipends guidelines)"
-                    value={newDocTitle}
-                    onChange={(e) => setNewDocTitle(e.target.value)}
-                    className="text-input"
-                    style={{ fontSize: "0.8rem", padding: "8px 10px" }}
-                  />
-                  <textarea 
-                    placeholder="Policy content body text..."
-                    value={newDocText}
-                    onChange={(e) => setNewDocText(e.target.value)}
-                    className="textarea-input"
-                    rows={3}
-                    required
-                    style={{ fontSize: "0.8rem", padding: "8px 10px", resize: "none" }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "0.74rem", color: "var(--success)" }}>{ingestMessage}</span>
-                    <button type="submit" className="button-primary" style={{ padding: "6px 12px", fontSize: "0.76rem" }} disabled={isIngesting}>
-                      {isIngesting ? "indexing..." : "Ingest Policy"}
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                      Policy Guideline Text
+                    </label>
+                    <textarea 
+                      placeholder="Input the full text details of the guideline section..."
+                      value={newDocText}
+                      onChange={(e) => setNewDocText(e.target.value)}
+                      className="textarea-input"
+                      rows={5}
+                      required
+                      style={{ resize: "none" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                    <span style={{ fontSize: "0.74rem", color: "var(--success)", fontWeight: "600" }}>{ingestMessage}</span>
+                    <button 
+                      type="submit" 
+                      className="button-primary" 
+                      style={{ padding: "8px 16px" }} 
+                      disabled={isIngesting}
+                    >
+                      <PlusCircle size={14} /> {isIngesting ? "Indexing..." : "Index Guideline"}
                     </button>
                   </div>
                 </form>
               </div>
 
               {/* Indexed Files list */}
-              <div className="sleek-card" style={{ padding: "16px" }}>
-                <h4 style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "8px", fontWeight: "600" }}>
-                  Active Guidelines Indexed Corpus:
+              <div className="sleek-card" style={{ padding: "24px" }}>
+                <h4 style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Active Guidelines Indexed Corpus
                 </h4>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "150px", overflowY: "auto" }}>
-                  {documents.map((doc) => (
-                    <div key={doc.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "3px solid var(--primary)", borderRadius: "6px", padding: "6px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", flexDirection: "column", maxWidth: "80%" }}>
-                        <span style={{ fontSize: "0.78rem", fontWeight: "600", color: "var(--text-primary)" }}>{doc.title}</span>
-                        <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>{doc.text_preview.slice(0, 60)}...</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
+                  {documents.length === 0 ? (
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>No files indexed. Click Reset Defaults above.</span>
+                  ) : (
+                    documents.map((doc) => (
+                      <div 
+                        key={doc.id} 
+                        style={{ 
+                          background: "rgba(255,255,255,0.7)", 
+                          border: "1px solid var(--card-border)", 
+                          borderLeft: "4px solid var(--primary)", 
+                          borderRadius: "10px", 
+                          padding: "10px 14px", 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          alignItems: "center" 
+                        }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column", maxWidth: "80%" }}>
+                          <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--text-primary)" }}>{doc.title}</span>
+                          <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", marginTop: "2px" }}>{doc.text_preview.slice(0, 75)}...</span>
+                        </div>
+                        <span className="badge badge-blue" style={{ fontSize: "0.56rem" }}>{doc.category}</span>
                       </div>
-                      <span className="badge badge-blue" style={{ fontSize: "0.52rem", padding: "1px 4px" }}>{doc.category}</span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* TAB 4: Credentials Configuration */}
+          {/* TAB 5: Settings / Credentials */}
           {activeTab === "settings" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div className="sleek-card" style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px" }}>
-                <h3 style={{ fontSize: "0.9rem", fontWeight: "700" }}>System Credentials Setup</h3>
+            <motion.div 
+              key="settings"
+              {...pageTransition}
+              style={{ maxWidth: "600px", margin: "0 auto" }}
+            >
+              <div className="sleek-card" style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "24px" }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: "700", borderBottom: "1px solid var(--card-border)", paddingBottom: "10px" }}>
+                  System Credentials & Storage Management
+                </h3>
                 
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <button onClick={() => setIsKeyModalOpen(true)} className="button-primary" style={{ width: "100%", padding: "10px", fontSize: "0.85rem" }}>
-                    🔑 Configure API Keys & LangSmith cloud
+                <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                  Enter credentials to connect with external LLM providers, configure Upstash Redis cache storage, or manage LangSmith cloud traces.
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "8px" }}>
+                  <button 
+                    onClick={() => setIsKeyModalOpen(true)} 
+                    className="button-primary" 
+                    style={{ width: "100%", padding: "12px", fontSize: "0.85rem" }}
+                  >
+                    <Key size={15} /> Configure Environment API Keys
                   </button>
                   
-                  <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
-                    <button onClick={handleClearCache} className="button-secondary" style={{ flex: 1, padding: "8px", fontSize: "0.76rem" }}>
-                      🧹 Flush Upstash cache
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "4px" }}>
+                    <button 
+                      onClick={handleClearCache} 
+                      className="button-secondary" 
+                      style={{ padding: "10px" }}
+                    >
+                      <Trash2 size={13} style={{ color: "var(--danger)" }} /> Flush Upstash Cache
                     </button>
-                    <button onClick={handleClearStats} className="button-secondary" style={{ flex: 1, padding: "8px", fontSize: "0.76rem" }}>
-                      🗑️ Reset performance stats
+                    <button 
+                      onClick={handleClearStats} 
+                      className="button-secondary" 
+                      style={{ padding: "10px" }}
+                    >
+                      <RotateCcw size={13} /> Reset Timings Stats
                     </button>
                   </div>
                 </div>
+
+                <div style={{ 
+                  marginTop: "12px", 
+                  background: "rgba(248, 250, 252, 0.8)", 
+                  border: "1.5px dashed var(--card-border)", 
+                  borderRadius: "10px", 
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px"
+                }}>
+                  <h4 style={{ fontSize: "0.78rem", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    FastAPI Endpoint Active Status
+                  </h4>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ 
+                      width: "8px", 
+                      height: "8px", 
+                      borderRadius: "50%", 
+                      background: backendActive ? "var(--success)" : "var(--danger)",
+                      boxShadow: backendActive ? "0 0 8px var(--success)" : "0 0 8px var(--danger)"
+                    }} />
+                    <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                      {backendActive ? "Active & Listening on 127.0.0.1:8000" : "Disconnected - Run backend server first"}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                    Ensure `./venv/bin/uvicorn main:app` is running inside the backend folder to submit queries.
+                  </span>
+                </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-        </div>
-
-        {/* RIGHT COLUMN: Permanent Visual Diagnostics (Extremely clean & stylish) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          
-          {/* Dynamic multi agent diagram map */}
-          <Visualizer 
-            logs={response ? response.logs : []}
-            routeDecision={response ? response.route_decision : ""}
-            retryCount={response ? response.retry_count : 0}
-            modelUsed={response ? response.model_used : ""}
-            cacheHit={response ? response.cache_hit : false}
-            activeNode=""
-          />
-
-          {/* Analytics Cost & Comparison block */}
-          <Analytics 
-            data={response ? {
-              latency: response.latencies?.overall || 0,
-              cost: response.cost,
-              costSaved: accumulatedSavings,
-              cacheHit: response.cache_hit,
-              cacheSimilarity: response.cache_similarity,
-              faithfulness: response.eval_results?.faithfulness,
-              relevance: response.eval_results?.relevance,
-              modelUsed: response.model_used,
-              retryCount: response.retry_count,
-            } : null}
-          />
-
-        </div>
-
-      </div>
+        </AnimatePresence>
+      </main>
 
       {/* Setup API Credentials Modal overlay */}
       <KeyModal 
