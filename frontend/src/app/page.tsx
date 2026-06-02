@@ -103,7 +103,6 @@ export default function Dashboard() {
   const [backendActive, setBackendActive] = useState(false);
 
   // const BACKEND_URL = "http://127.0.0.1:8000";
-  
   const BACKEND_URL = "https://ragops-engine.onrender.com";
 
   // Startup Hooks
