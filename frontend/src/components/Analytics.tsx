@@ -188,18 +188,7 @@ export default function Analytics({ data }: AnalyticsProps) {
           </table>
         </div>
         
-        <div style={{ 
-          marginTop: "16px", 
-          fontSize: "0.76rem", 
-          color: "var(--text-secondary)", 
-          lineHeight: "1.45",
-          background: "rgba(241, 245, 249, 0.5)", 
-          padding: "12px 16px", 
-          borderRadius: "8px",
-          border: "1px solid var(--card-border)"
-        }}>
-          💡 **Resume Impact Statement**: Direct Naive RAG is financially unviable due to high-end API calls on simple queries. Our server implements a **Complexity Router** coupled with a **Semantic Cache** that intercepts queries for **$0**, fetching details locally under 20ms.
-        </div>
+        
       </motion.div>
 
       {/* 3. Ragas Evaluator Gauges */}

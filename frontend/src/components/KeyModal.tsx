@@ -192,10 +192,6 @@ export default function KeyModal({ isOpen, onClose, onSave }: KeyModalProps) {
               padding: "24px",
               background: "rgba(255, 255, 255, 0.4)"
             }}>
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", lineHeight: "1.4" }}>
-                Configure environment API keys. Credentials are saved **only in your local browser storage** and are never sent to any external server besides your own FastAPI local instance.
-              </p>
-
               {/* LLM Section */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <h3 style={{ fontSize: "0.78rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>

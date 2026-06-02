@@ -620,7 +620,7 @@ body {
 
 /* Styled Action Buttons */
 .button-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 50%) ;
   color: #ffffff;
   border: none;
   font-family: var(--font-sans);
@@ -637,7 +637,7 @@ body {
 }
 
 .button-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--primary-glow);
 }

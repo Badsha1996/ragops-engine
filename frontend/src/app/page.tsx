@@ -1,5 +1,6 @@
 "use client";
 
+import RAGICON from "../../public/rag-ops-icon.png";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -101,7 +102,9 @@ export default function Dashboard() {
   });
   const [backendActive, setBackendActive] = useState(false);
 
-  const BACKEND_URL = "http://127.0.0.1:8000";
+  // const BACKEND_URL = "http://127.0.0.1:8000";
+  
+  const BACKEND_URL = "https://ragops-engine.onrender.com";
 
   // Startup Hooks
   useEffect(() => {
@@ -396,20 +399,12 @@ export default function Dashboard() {
 
   return (
     <div className="app-container">
-      
-      {/* 1. Header (Balanced Padding & Clean Alignment) */}
+
+      {/* HEADER SECTION  */}
       <header className="app-header">
         <div className="logo-text">
-          <div style={{ background: "var(--primary)", color: "#ffffff", padding: "8px", borderRadius: "10px", display: "flex", alignItems: "center" }}>
-            <Activity size={20} />
-          </div>
-          <span style={{ fontWeight: "700" }}>RAGOps Engine</span>
-          <span className="badge badge-blue" style={{ fontSize: "0.68rem" }}>
-            Multi-Agent AI
-          </span>
+          <img src={RAGICON.src} alt="RAGOps Logo" style={{ width: "120px", height: "85px" }} />
         </div>
-
-        {/* Tab Navbar (Perfect Line Height) */}
         <nav className="tab-navbar">
           <button 
             onClick={() => setActiveTab("playground")} 
@@ -444,7 +439,7 @@ export default function Dashboard() {
         </nav>
       </header>
 
-      {/* Global Counters Dashboard Mini bar (Flush aligned, zero waste padding) */}
+      {/* TOP METRICS */}
       <div 
         style={{ 
           display: "grid", 
@@ -484,9 +479,6 @@ export default function Dashboard() {
           <div>
             <div className="mini-card-label">Accumulated savings</div>
             <div className="mini-card-value" style={{ color: "var(--success)" }}>${accumulatedSavings.toFixed(4)}</div>
-          </div>
-          <div style={{ color: "var(--success)", opacity: 0.15 }}>
-            <Sparkles size={32} />
           </div>
         </div>
       </div>
@@ -543,21 +535,21 @@ export default function Dashboard() {
                         className={`strategy-chip ${hybridSearchEnabled ? "active" : ""}`}
                         title="Runs keyword search (BM25) and dense vector search in parallel, merging results via Reciprocal Rank Fusion."
                       >
-                        ⚡ Hybrid RRF Retrieval
+                       Hybrid RRF Retrieval
                       </button>
                       <button 
                         onClick={() => handleToggleChange("hyde", !hydeEnabled)}
                         className={`strategy-chip ${hydeEnabled ? "active" : ""}`}
                         title="Generates a hypothetical correct response first, using it as the embedding search query to drastically improve vector alignment."
                       >
-                        🔎 HyDE Rewriting
+                        HyDE Rewriting
                       </button>
                       <button 
                         onClick={() => handleToggleChange("multiquery", !multiQueryEnabled)}
                         className={`strategy-chip ${multiQueryEnabled ? "active" : ""}`}
                         title="Decomposes a single query into 3 sub-queries, gathering document chunks for all of them to synthesize robust answers."
                       >
-                        🧬 Multi-Query Split
+                        Multi-Query Split
                       </button>
                     </div>
                   </div>
@@ -613,7 +605,7 @@ export default function Dashboard() {
                                     color: isExpanded ? "var(--primary)" : "var(--text-secondary)"
                                   }}
                                 >
-                                  📄 {label} {isExpanded ? "▲" : "▼"}
+                                  {label} {isExpanded ? "▲" : "▼"}
                                 </button>
                               );
                             })}
@@ -706,7 +698,7 @@ export default function Dashboard() {
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
                         <span style={{ color: "var(--text-secondary)" }}>Router Classify</span>
                         <span style={{ fontWeight: "600", color: "var(--primary)", textTransform: "capitalize" }}>
-                          {response.route_decision === "cheap" ? "⚡ Simple (Fast)" : "🧠 Complex (Premium)"}
+                          {response.route_decision === "cheap" ? "Simple (Fast)" : "Complex (Premium)"}
                         </span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
@@ -726,13 +718,13 @@ export default function Dashboard() {
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
                         <span style={{ color: "var(--text-secondary)" }}>Cache Synchronization</span>
                         <span style={{ fontWeight: "600", color: "var(--success)" }}>
-                          {response.cache_hit ? "⚡ HIT" : "📝 Sync Complete"}
+                          {response.cache_hit ? "HIT" : "Sync Complete"}
                         </span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
                         <span style={{ color: "var(--text-secondary)" }}>Quality Auditor</span>
                         <span style={{ fontWeight: "600", color: response.retry_count > 0 ? "var(--warning)" : "var(--success)" }}>
-                          {response.retry_count > 0 ? `⚠️ Rejected ${response.retry_count}x` : "✅ Approved"}
+                          {response.retry_count > 0 ? `Rejected ${response.retry_count}x` : "Approved"}
                         </span>
                       </div>
                     </div>
@@ -1013,35 +1005,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div style={{ 
-                  marginTop: "12px", 
-                  background: "rgba(248, 250, 252, 0.8)", 
-                  border: "1.5px dashed var(--card-border)", 
-                  borderRadius: "10px", 
-                  padding: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px"
-                }}>
-                  <h4 style={{ fontSize: "0.78rem", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                    FastAPI Endpoint Active Status
-                  </h4>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ 
-                      width: "8px", 
-                      height: "8px", 
-                      borderRadius: "50%", 
-                      background: backendActive ? "var(--success)" : "var(--danger)",
-                      boxShadow: backendActive ? "0 0 8px var(--success)" : "0 0 8px var(--danger)"
-                    }} />
-                    <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--text-primary)" }}>
-                      {backendActive ? "Active & Listening on 127.0.0.1:8000" : "Disconnected - Run backend server first"}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                    Ensure `./venv/bin/uvicorn main:app` is running inside the backend folder to submit queries.
-                  </span>
-                </div>
+                
               </div>
             </motion.div>
           )}
