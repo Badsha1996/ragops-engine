@@ -88,6 +88,12 @@ export default function Dashboard() {
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestMessage, setIngestMessage] = useState("");
   
+  // File Upload states
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [uploadCategory, setUploadCategory] = useState("Uploaded");
+  
   // Credentials State
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [apiKeys, setApiKeys] = useState({
@@ -102,8 +108,8 @@ export default function Dashboard() {
   });
   const [backendActive, setBackendActive] = useState(false);
 
-  // const BACKEND_URL = "http://127.0.0.1:8000";
-  const BACKEND_URL = "https://ragops-engine.onrender.com";
+  const BACKEND_URL = "http://127.0.0.1:8000";
+  // const BACKEND_URL = "https://ragops-engine.onrender.com";
 
   // Startup Hooks
   useEffect(() => {
@@ -278,6 +284,84 @@ export default function Dashboard() {
       setIngestMessage("Failed to connect.");
     } finally {
       setIsIngesting(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    setUploadStatus("Uploading and indexing...");
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("category", uploadCategory);
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setUploadStatus(`Success: ${data.message}`);
+        setUploadFile(null);
+        fetchDocuments();
+        setTimeout(() => setUploadStatus(""), 4000);
+      } else {
+        const err = await res.json();
+        setUploadStatus(`Error: ${err.detail || "Upload failed."}`);
+      }
+    } catch (err: any) {
+      setUploadStatus("Error: Failed to connect to server.");
+    }
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm(`Are you sure you want to delete "${docId}" from the vector database?`)) return;
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/documents/${docId}`, {
+        method: "DELETE",
+      });
+      
+      if (res.ok) {
+        fetchDocuments();
+      } else {
+        const err = await res.json();
+        alert(`Failed to delete: ${err.detail}`);
+      }
+    } catch {
+      alert("Failed to connect to backend.");
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      setUploadFile(file);
+      handleFileUpload(file);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setUploadFile(file);
+      handleFileUpload(file);
     }
   };
 
@@ -841,88 +925,157 @@ export default function Dashboard() {
               {...pageTransition}
               className="chat-workspace split"
             >
-              {/* Document ingestion form */}
-              <div className="sleek-card" style={{ padding: "24px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                  <h3 style={{ fontSize: "0.9rem", fontWeight: "700" }}>Index Corporate Guidelines</h3>
-                  <button 
-                    onClick={handleResetCorpus} 
-                    className="button-secondary" 
-                    style={{ fontSize: "0.68rem", padding: "4px 8px" }}
-                  >
-                    <RotateCcw size={10} /> Reset Defaults
-                  </button>
-                </div>
-
-                <form onSubmit={handleIngestSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: "10px" }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
-                        Unique Document ID
-                      </label>
-                      <input 
-                        type="text"
-                        placeholder="e.g. travel_policy"
-                        value={newDocId}
-                        onChange={(e) => setNewDocId(e.target.value)}
-                        className="text-input"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
-                        Category
-                      </label>
-                      <input 
-                        type="text"
-                        placeholder="e.g. HR"
-                        value={newDocCategory}
-                        onChange={(e) => setNewDocCategory(e.target.value)}
-                        className="text-input"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
-                      Document Title
-                    </label>
-                    <input 
-                      type="text"
-                      placeholder="e.g. Travel and Transport Stipends"
-                      value={newDocTitle}
-                      onChange={(e) => setNewDocTitle(e.target.value)}
-                      className="text-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
-                      Policy Guideline Text
-                    </label>
-                    <textarea 
-                      placeholder="Input the full text details of the guideline section..."
-                      value={newDocText}
-                      onChange={(e) => setNewDocText(e.target.value)}
-                      className="textarea-input"
-                      rows={5}
-                      required
-                      style={{ resize: "none" }}
-                    />
-                  </div>
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
-                    <span style={{ fontSize: "0.74rem", color: "var(--success)", fontWeight: "600" }}>{ingestMessage}</span>
+              {/* Left Column Container: Manual Indexing Form + File Upload Zone */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                
+                {/* Document ingestion form */}
+                <div className="sleek-card" style={{ padding: "24px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <h3 style={{ fontSize: "0.9rem", fontWeight: "700" }}>Index Corporate Guidelines</h3>
                     <button 
-                      type="submit" 
-                      className="button-primary" 
-                      style={{ padding: "8px 16px" }} 
-                      disabled={isIngesting}
+                      onClick={handleResetCorpus} 
+                      className="button-secondary" 
+                      style={{ fontSize: "0.68rem", padding: "4px 8px" }}
                     >
-                      <PlusCircle size={14} /> {isIngesting ? "Indexing..." : "Index Guideline"}
+                      <RotateCcw size={10} /> Reset Defaults
                     </button>
                   </div>
-                </form>
+
+                  <form onSubmit={handleIngestSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: "10px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                          Unique Document ID
+                        </label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. travel_policy"
+                          value={newDocId}
+                          onChange={(e) => setNewDocId(e.target.value)}
+                          className="text-input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                          Category
+                        </label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. HR"
+                          value={newDocCategory}
+                          onChange={(e) => setNewDocCategory(e.target.value)}
+                          className="text-input"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                        Document Title
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. Travel and Transport Stipends"
+                        value={newDocTitle}
+                        onChange={(e) => setNewDocTitle(e.target.value)}
+                        className="text-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                        Policy Guideline Text
+                      </label>
+                      <textarea 
+                        placeholder="Input the full text details of the guideline section..."
+                        value={newDocText}
+                        onChange={(e) => setNewDocText(e.target.value)}
+                        className="textarea-input"
+                        rows={5}
+                        required
+                        style={{ resize: "none" }}
+                      />
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                      <span style={{ fontSize: "0.74rem", color: "var(--success)", fontWeight: "600" }}>{ingestMessage}</span>
+                      <button 
+                        type="submit" 
+                        className="button-primary" 
+                        style={{ padding: "8px 16px" }} 
+                        disabled={isIngesting}
+                      >
+                        <PlusCircle size={14} /> {isIngesting ? "Indexing..." : "Index Guideline"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* File Upload Zone Card */}
+                <div className="sleek-card" style={{ padding: "24px" }}>
+                  <h3 style={{ fontSize: "0.9rem", fontWeight: "700", marginBottom: "16px" }}>Upload Temporary Policy Documents</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", fontWeight: "600" }}>
+                        Upload Category
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. Uploaded"
+                        value={uploadCategory}
+                        onChange={(e) => setUploadCategory(e.target.value)}
+                        className="text-input"
+                      />
+                    </div>
+
+                    <div 
+                      onDragEnter={handleDrag}
+                      onDragOver={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDrop={handleDrop}
+                      style={{
+                        border: dragActive ? "2px dashed var(--primary)" : "2px dashed var(--card-border)",
+                        borderRadius: "10px",
+                        padding: "30px 20px",
+                        textAlign: "center",
+                        backgroundColor: dragActive ? "var(--primary-light)" : "rgba(248, 250, 252, 0.5)",
+                        cursor: "pointer",
+                        transition: "var(--transition-smooth)"
+                      }}
+                      onClick={() => document.getElementById("file-upload-input")?.click()}
+                    >
+                      <input 
+                        id="file-upload-input"
+                        type="file"
+                        style={{ display: "none" }}
+                        onChange={handleFileInputChange}
+                        accept=".pdf,.txt,.md,.json"
+                      />
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                        <PlusCircle size={28} style={{ color: "var(--primary)" }} />
+                        <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                          Drag & drop a file here, or click to browse
+                        </span>
+                        <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+                          Supports PDF, TXT, MD, JSON (Max 5MB)
+                        </span>
+                      </div>
+                    </div>
+
+                    {uploadStatus && (
+                      <div style={{ 
+                        fontSize: "0.78rem", 
+                        fontWeight: "600",
+                        color: uploadStatus.startsWith("Error") ? "var(--danger)" : "var(--primary)",
+                        marginTop: "4px"
+                      }}>
+                        {uploadStatus}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               {/* Indexed Files list */}
@@ -930,7 +1083,7 @@ export default function Dashboard() {
                 <h4 style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Active Guidelines Indexed Corpus
                 </h4>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "580px", overflowY: "auto", paddingRight: "4px" }}>
                   {documents.length === 0 ? (
                     <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>No files indexed. Click Reset Defaults above.</span>
                   ) : (
@@ -948,11 +1101,35 @@ export default function Dashboard() {
                           alignItems: "center" 
                         }}
                       >
-                        <div style={{ display: "flex", flexDirection: "column", maxWidth: "80%" }}>
+                        <div style={{ display: "flex", flexDirection: "column", maxWidth: "70%" }}>
                           <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--text-primary)" }}>{doc.title}</span>
                           <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", marginTop: "2px" }}>{doc.text_preview.slice(0, 75)}...</span>
                         </div>
-                        <span className="badge badge-blue" style={{ fontSize: "0.56rem" }}>{doc.category}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span className="badge badge-blue" style={{ fontSize: "0.56rem" }}>{doc.category}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteDocument(doc.id);
+                            }}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "var(--danger)",
+                              padding: "4px",
+                              display: "flex",
+                              alignItems: "center",
+                              borderRadius: "4px",
+                              transition: "var(--transition-smooth)"
+                            }}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "var(--danger-light)")}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                            title="Delete document"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}

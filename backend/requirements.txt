@@ -15,3 +15,5 @@ numpy
 openai
 google
 dotenv
+pypdf
+python-multipart

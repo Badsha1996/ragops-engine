@@ -271,6 +271,16 @@ def clear_db():
     _parent_documents.clear()
     _child_documents.clear()
 
+def delete_document(doc_id: str) -> bool:
+    """Deletes a parent document and all its child chunks from in-memory stores."""
+    global _parent_documents, _child_documents
+    if doc_id in _parent_documents:
+        del _parent_documents[doc_id]
+        _child_documents = [child for child in _child_documents if child["parent_id"] != doc_id]
+        return True
+    return False
+
+
 # Reset and seed defaults
 def init_default_corpus():
     clear_db()

@@ -1,5 +1,7 @@
 import os
-from fastapi import FastAPI, HTTPException
+import io
+import re
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
@@ -155,6 +157,92 @@ async def get_documents():
             "text_preview": doc["text"][:150] + "..." if len(doc["text"]) > 150 else doc["text"]
         })
     return docs
+
+@app.post("/api/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    category: str = Form("Uploaded")
+):
+    """Parses and ingests an uploaded document (PDF, TXT, MD, JSON)."""
+    filename = file.filename
+    if not filename:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+        
+    ext = filename.split(".")[-1].lower() if "." in filename else ""
+    
+    try:
+        contents = await file.read()
+        
+        if ext == "pdf":
+            # Extract PDF text
+            try:
+                from pypdf import PdfReader
+                pdf_file = io.BytesIO(contents)
+                reader = PdfReader(pdf_file)
+                text = ""
+                for page in reader.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
+                
+                text = text.strip()
+                if not text:
+                    raise ValueError("No extractable text found in PDF.")
+            except Exception as pdf_err:
+                raise HTTPException(status_code=400, detail=f"Failed to parse PDF: {str(pdf_err)}")
+        else:
+            # Assume text/markdown/json/etc
+            try:
+                text = contents.decode("utf-8", errors="ignore").strip()
+            except Exception as text_err:
+                raise HTTPException(status_code=400, detail=f"Failed to decode file: {str(text_err)}")
+                
+        if not text:
+            raise HTTPException(status_code=400, detail="Document content is empty.")
+            
+        # Clean filename to get a nice ID slug
+        doc_id = re.sub(r'[^a-zA-Z0-9_\-]', '_', filename.rsplit('.', 1)[0]).lower()
+        # Ensure it is unique by checking if it already exists and appending suffix if necessary
+        original_doc_id = doc_id
+        counter = 1
+        while doc_id in vector_db._parent_documents:
+            doc_id = f"{original_doc_id}_{counter}"
+            counter += 1
+            
+        title = filename.rsplit('.', 1)[0].replace('_', ' ').replace('-', ' ').title()
+        
+        metadata = {
+            "title": title,
+            "category": category or "Uploaded"
+        }
+        
+        vector_db.add_document(doc_id, text, metadata)
+        
+        return {
+            "status": "success",
+            "message": f"Successfully uploaded and indexed '{filename}'.",
+            "document": {
+                "id": doc_id,
+                "title": title,
+                "category": metadata["category"],
+                "text_preview": text[:150] + "..." if len(text) > 150 else text
+            }
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading document: {str(e)}")
+
+@app.delete("/api/documents/{doc_id}")
+async def delete_document(doc_id: str):
+    """Deletes a document from the vector corpus database."""
+    try:
+        success = vector_db.delete_document(doc_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Document not found")
+        return {"status": "success", "message": f"Document '{doc_id}' successfully deleted."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting document: {str(e)}")
 
 @app.post("/api/clear-cache")
 async def clear_cache():
