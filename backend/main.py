@@ -20,8 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Pydantic Schemas ---
-
+# *************** Pydantic Schemas ***************
 class APIKeys(BaseModel):
     gemini: Optional[str] = ""
     openai: Optional[str] = ""
@@ -48,8 +47,7 @@ class IngestRequest(BaseModel):
     title: Optional[str] = ""
     category: Optional[str] = "General"
 
-# --- Endpoints ---
-
+# *************** Endpoints ***************
 @app.get("/api/status")
 async def get_status():
     """Returns the current backend status, configured keys, and Demo Mode status."""
